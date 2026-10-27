@@ -1,4 +1,4 @@
-import { lookupPostcode } from '../../utils/postcode';
+import { isValidPostcodeFormat } from '../../utils/postcode';
 import { searchProviders, AllProvidersFailedError } from '../../providers';
 import { validateRecommendationRequest } from '../../utils/requestValidation';
 
@@ -22,29 +22,14 @@ export async function POST(request) {
     }
     const { postcode, budgetMin, budgetMax, mealOptions } = validation.value;
 
-    // Check the postcode exists and get its coordinates (postcodes.io)
-    // before doing any other work
-    const {
-      status: postcodeStatus,
-      latitude: originLat,
-      longitude: originLon,
-    } = await lookupPostcode(postcode);
-    if (postcodeStatus === 'invalid_format') {
+    // External APIs are disconnected for now: the postcode is format-checked
+    // offline and not looked up on postcodes.io, so there are no coordinates
+    // and results come back without a distance. To reconnect, call
+    // lookupPostcode from ../../utils/postcode here.
+    if (!isValidPostcodeFormat(postcode)) {
       return Response.json(
         { message: 'Please enter a valid UK postcode (for example SW1A 1AA).' },
         { status: 400 }
-      );
-    }
-    if (postcodeStatus === 'not_found') {
-      return Response.json(
-        { message: 'Postcode not found. Please check it and try again.' },
-        { status: 400 }
-      );
-    }
-    if (postcodeStatus !== 'valid') {
-      return Response.json(
-        { message: 'Postcode lookup is unavailable right now. Please try again later.' },
-        { status: 502 }
       );
     }
 
@@ -52,7 +37,7 @@ export async function POST(request) {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // In a real implementation, this would:
-    // 1. Get coordinates from postcode (done above via postcodes.io)
+    // 1. Get coordinates from postcode (postcodes.io, disconnected for now)
     // 2. Query food delivery APIs (Deliveroo, Just Eat, Uber Eats) via the
     //    provider registry in src/app/providers (currently mock data only)
     // 3. Use LLM to process and rank results
@@ -62,8 +47,8 @@ export async function POST(request) {
     try {
       results = await searchProviders({
         postcode,
-        latitude: originLat,
-        longitude: originLon,
+        latitude: null,
+        longitude: null,
         budgetMin,
         budgetMax,
         mealOptions,
