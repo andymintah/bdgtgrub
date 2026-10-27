@@ -5,6 +5,7 @@ import SearchForm from '../components/SearchForm';
 import RecommendationList from '../components/RecommendationList';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import EmptyState from '../components/EmptyState';
 
 export default function Home() {
   const [recommendations, setRecommendations] = useState([]);
@@ -31,7 +32,7 @@ export default function Home() {
       }
 
       const data = await response.json();
-      setRecommendations(data.recommendations);
+      setRecommendations(data.recommendations || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -64,6 +65,10 @@ export default function Home() {
                 recommendations={recommendations} 
                 searchParams={searchParams}
               />
+            )}
+
+            {searchParams && !loading && !error && recommendations.length === 0 && (
+              <EmptyState searchParams={searchParams} />
             )}
           </div>
         </div>
