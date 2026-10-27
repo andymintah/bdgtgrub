@@ -1,133 +1,118 @@
-import { Star, Clock, MapPin, ExternalLink } from 'lucide-react';
+import { Star, Clock, MapPin, ExternalLink, Tag } from 'lucide-react';
+import { formatPrice, mealLabels, budgetPhrase } from '../utils/format';
+
+// Name the order link after the platform it opens. Anything else is the
+// restaurant's own site.
+const ORDER_HOSTS = [
+  ['deliveroo', 'Deliveroo'],
+  ['just-eat', 'Just Eat'],
+  ['ubereats', 'Uber Eats'],
+  ['uber', 'Uber Eats'],
+];
+
+const orderLabel = (url, restaurantName) => {
+  let host = '';
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    // Unparseable URL: fall through to the restaurant name
+  }
+  const match = ORDER_HOSTS.find(([key]) => host.includes(key));
+  return match ? `Order on ${match[1]}` : `Order from ${restaurantName}`;
+};
+
+const joinNames = (names) =>
+  names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 
 export default function RecommendationList({ recommendations, searchParams }) {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP'
-    }).format(price);
-  };
-
-  const getPlatformColor = (platform) => {
-    const colors = {
-      'deliveroo': 'bg-teal-100 text-teal-800',
-      'just-eat': 'bg-orange-100 text-orange-800',
-      'uber-eats': 'bg-black text-white',
-      'local': 'bg-purple-100 text-purple-800'
-    };
-    return colors[platform.toLowerCase()] || 'bg-gray-100 text-gray-800';
-  };
+  const count = recommendations.length;
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Found {recommendations.length} recommendations for {searchParams?.postcode}
-        </h2>
-        <p className="text-gray-600">
-          Budget: {formatPrice(searchParams?.budgetMin || 0)} - {formatPrice(searchParams?.budgetMax)} • 
-          Categories: {searchParams?.mealOptions.join(', ')}
-        </p>
-      </div>
+    <section aria-labelledby="results-heading">
+      <h2 id="results-heading" className="type-expanded font-extrabold text-2xl sm:text-3xl">
+        {count} {count === 1 ? 'meal' : 'meals'} {budgetPhrase(searchParams)} near {searchParams?.postcode}
+      </h2>
+      <p className="text-steam mt-1 mb-8">Matching {mealLabels(searchParams?.mealOptions)}</p>
 
-      <div className="grid gap-6">
-        {recommendations.map((item, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                    {item.dishName}
-                  </h3>
-                  <p className="text-gray-600 font-medium">{item.restaurantName}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-orange-600">
-                    {formatPrice(item.price)}
-                  </div>
-                  {item.originalPrice && item.originalPrice > item.price && (
-                    <div className="text-sm text-gray-500 line-through">
-                      {formatPrice(item.originalPrice)}
-                    </div>
+      <ol className="space-y-3">
+        {recommendations.map((item, index) => {
+          const discounted = item.originalPrice && item.originalPrice > item.price;
+          return (
+            <li key={index} className="bg-plate rounded-xl p-5 sm:p-6 grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8">
+              <div className="min-w-0">
+                <h3 className="type-expanded font-bold text-xl leading-tight">{item.dishName}</h3>
+                <p className="font-semibold mt-1">{item.restaurantName}</p>
+
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-steam">
+                  {item.rating && (
+                    <span className="inline-flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-ink text-ink" aria-hidden="true" />
+                      <span className="text-ink font-medium">{item.rating}</span>
+                      {item.reviewCount && <span>({item.reviewCount.toLocaleString('en-GB')} reviews)</span>}
+                    </span>
+                  )}
+                  {item.deliveryTime && (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-4 h-4" aria-hidden="true" />
+                      {item.deliveryTime} min delivery
+                    </span>
+                  )}
+                  {typeof item.distance === 'number' && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-4 h-4" aria-hidden="true" />
+                      {item.distance} miles away
+                    </span>
                   )}
                 </div>
               </div>
 
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                {item.description}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-gray-600">
-                {item.rating && (
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                    <span className="font-medium">{item.rating}</span>
-                    {item.reviewCount && (
-                      <span className="ml-1">({item.reviewCount} reviews)</span>
-                    )}
-                  </div>
-                )}
-                
-                {item.deliveryTime && (
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    <span>{item.deliveryTime} mins</span>
-                  </div>
-                )}
-                
-                {typeof item.distance === 'number' && (
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span>{item.distance} miles</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-wrap justify-between items-center gap-4">
-                <div className="flex flex-wrap gap-2">
-                  {item.platforms?.map((platform, idx) => (
-                    <span
-                      key={idx}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getPlatformColor(platform)}`}
-                    >
-                      {platform}
-                    </span>
-                  ))}
-                  
-                  {item.categories?.map((category, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
-                    >
-                      {category}
-                    </span>
-                  ))}
-                </div>
-
-                {item.orderUrl && (
-                  <a
-                    href={item.orderUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
-                  >
-                    Order Now
-                    <ExternalLink className="w-4 h-4 ml-2" />
-                  </a>
-                )}
-              </div>
-
-              {item.specialOffer && (
-                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 text-sm font-medium">
-                    🎉 Special Offer: {item.specialOffer}
+              <div
+                className="sticker self-start px-3 py-2 text-right"
+                style={{ animationDelay: `${index * 70}ms` }}
+              >
+                {discounted && (
+                  <p className="text-reduced text-xs font-bold leading-none mb-1">
+                    Reduced <s className="font-semibold">{formatPrice(item.originalPrice)}</s>
                   </p>
+                )}
+                <p className="type-expanded font-extrabold text-2xl sm:text-3xl leading-none">
+                  {discounted && <span className="sr-only">Now </span>}
+                  {formatPrice(item.price)}
+                </p>
+              </div>
+
+              <div className="col-span-2 mt-3">
+                <p className="max-w-[62ch] leading-relaxed">{item.description}</p>
+
+                {item.specialOffer && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 font-semibold text-sm">
+                    <Tag className="w-4 h-4" aria-hidden="true" />
+                    {item.specialOffer}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+                  {item.platforms?.length > 0 && (
+                    <p className="text-sm text-steam">Available on {joinNames(item.platforms)}</p>
+                  )}
+                  {item.orderUrl && (
+                    <a
+                      href={item.orderUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-ink font-semibold hover:bg-ink hover:text-plate transition-colors"
+                    >
+                      {orderLabel(item.orderUrl, item.restaurantName)}
+                      <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                      <span className="sr-only">(opens in a new tab)</span>
+                    </a>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }

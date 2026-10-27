@@ -1,27 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  axes: ["wdth"],
 });
 
 export const metadata = {
-  title: "Food Delivery Finder - UK",
-  description: "Find the best food delivery options in your area based on your budget and preferences",
+  title: "BudgetGrub: takeaway that fits your budget",
+  description: "Enter your postcode and budget to find takeaway meals you can afford near you.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en-GB">
+      <body className={`${archivo.variable} antialiased`}>
         {children}
       </body>
     </html>

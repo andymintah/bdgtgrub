@@ -1,26 +1,15 @@
-import { SearchX } from 'lucide-react';
+import { budgetPhrase, mealLabels } from '../utils/format';
 
 export default function EmptyState({ searchParams }) {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP'
-    }).format(price);
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-      <SearchX className="w-12 h-12 text-orange-500 mx-auto mb-4" aria-hidden="true" />
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">
-        No meals found
+    <section className="bg-plate rounded-xl p-6 sm:p-8">
+      <h2 className="type-expanded font-extrabold text-2xl">
+        Nothing {budgetPhrase(searchParams)} near {searchParams?.postcode}
       </h2>
-      <p className="text-gray-600 mb-4">
-        Budget: {formatPrice(searchParams?.budgetMin || 0)} - {formatPrice(searchParams?.budgetMax)} • 
-        Categories: {searchParams?.mealOptions?.join(', ')}
+      <p className="text-steam mt-1">Matching {mealLabels(searchParams?.mealOptions)}</p>
+      <p className="mt-4 max-w-[62ch]">
+        Raise your maximum, lower or clear the amount to ignore, or pick more options above.
       </p>
-      <p className="text-gray-700">
-        Try a higher maximum budget, a lower minimum budget, or choose different or more meal options.
-      </p>
-    </div>
+    </section>
   );
 }

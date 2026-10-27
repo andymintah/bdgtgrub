@@ -1,11 +1,17 @@
-export default function LoadingSpinner() {
+import { budgetPhrase } from '../utils/format';
+
+export default function LoadingSpinner({ searchParams }) {
   return (
-    <div className="flex justify-center items-center py-12">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-      <div className="ml-4">
-        <p className="text-lg font-medium text-gray-900">Finding the best options for you...</p>
-        <p className="text-sm text-gray-600">This may take a few moments</p>
-      </div>
+    <div role="status" className="flex items-center gap-4 py-10">
+      <div
+        className="h-8 w-8 rounded-full border-4 border-ink/15 border-t-ink motion-safe:animate-spin"
+        aria-hidden="true"
+      />
+      <p className="text-lg font-medium">
+        {searchParams
+          ? `Checking what's ${budgetPhrase(searchParams)} near ${searchParams.postcode}…`
+          : 'Finding meals…'}
+      </p>
     </div>
   );
 }
