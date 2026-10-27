@@ -1,4 +1,5 @@
 import { mockRecommendations } from '../../utils/MockData';
+import { validatePostcode } from '../../utils/postcode';
 
 export async function POST(request) {
   try {
@@ -9,15 +10,35 @@ export async function POST(request) {
       return Response.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
+    // Check the postcode exists (postcodes.io) before doing any other work
+    const postcodeStatus = await validatePostcode(postcode);
+    if (postcodeStatus === 'invalid_format') {
+      return Response.json(
+        { message: 'Please enter a valid UK postcode (for example SW1A 1AA).' },
+        { status: 400 }
+      );
+    }
+    if (postcodeStatus === 'not_found') {
+      return Response.json(
+        { message: 'Postcode not found. Please check it and try again.' },
+        { status: 400 }
+      );
+    }
+    if (postcodeStatus !== 'valid') {
+      return Response.json(
+        { message: 'Postcode lookup is unavailable right now. Please try again later.' },
+        { status: 502 }
+      );
+    }
+
     // Simulate API processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // In a real implementation, this would:
-    // 1. Validate postcode using UK postcode API
-    // 2. Get coordinates from postcode
-    // 3. Query food delivery APIs (Deliveroo, Just Eat, Uber Eats)
-    // 4. Use LLM to process and rank results
-    // 5. Filter by budget and meal preferences
+    // 1. Get coordinates from postcode (it is already validated above via postcodes.io)
+    // 2. Query food delivery APIs (Deliveroo, Just Eat, Uber Eats)
+    // 3. Use LLM to process and rank results
+    // 4. Filter by budget and meal preferences
 
     const recommendations = mockRecommendations.filter(item => {
       const matchesBudget = item.price >= budgetMin && item.price <= budgetMax;
