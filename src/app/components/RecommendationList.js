@@ -75,7 +75,7 @@ export default function RecommendationList({ recommendations, searchParams }) {
                   </div>
                 )}
                 
-                {item.distance && (
+                {typeof item.distance === 'number' && (
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-1" />
                     <span>{item.distance} miles</span>
