@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Head from 'next/head';
 import SearchForm from '../components/SearchForm';
 import RecommendationList from '../components/RecommendationList';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -42,13 +41,6 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Food Delivery Finder - UK</title>
-        <meta name="description" content="Find the best food delivery options in your area based on your budget and preferences" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
           <header className="text-center mb-8">
