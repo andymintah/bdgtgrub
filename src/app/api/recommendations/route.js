@@ -1,16 +1,12 @@
-import { mockRecommendations } from '../../utils/mockData';
+import { mockRecommendations } from '../../utils/MockData';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
-
+export async function POST(request) {
   try {
-    const { postcode, budgetMin, budgetMax, mealOptions } = req.body;
+    const { postcode, budgetMin, budgetMax, mealOptions } = await request.json();
 
     // Validate input
     if (!postcode || !budgetMax || !mealOptions || mealOptions.length === 0) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return Response.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
     // Simulate API processing delay
@@ -43,15 +39,15 @@ export default async function handler(req, res) {
       return bScore - aScore;
     });
 
-    res.status(200).json({
+    return Response.json({
       success: true,
       recommendations: rankedRecommendations,
       searchArea: postcode,
       totalFound: rankedRecommendations.length
-    });
+    }, { status: 200 });
 
   } catch (error) {
     console.error('API Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    return Response.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
