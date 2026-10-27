@@ -5,7 +5,15 @@ const POSTCODES_IO_BASE = 'https://api.postcodes.io/postcodes';
 const LOOKUP_TIMEOUT_MS = 5000;
 
 /**
- * Looks up a postcode on postcodes.io.
+ * Offline UK postcode format check. No network call.
+ */
+export function isValidPostcodeFormat(postcode) {
+  return typeof postcode === 'string' && UK_POSTCODE_REGEX.test(postcode.trim());
+}
+
+/**
+ * Looks up a postcode on postcodes.io. Not called while the backend runs on
+ * mock data only; kept so the route can be reconnected later.
  * Resolves to { status, latitude, longitude } where status is one of
  * 'valid', 'invalid_format', 'not_found', 'unavailable'. latitude/longitude
  * are finite numbers when status is 'valid' and postcodes.io knows the
