@@ -1,14 +1,26 @@
 import { lookupPostcode } from '../../utils/postcode';
 import { searchProviders, AllProvidersFailedError } from '../../providers';
+import { validateRecommendationRequest } from '../../utils/requestValidation';
 
 export async function POST(request) {
   try {
-    const { postcode, budgetMin, budgetMax, mealOptions } = await request.json();
-
-    // Validate input
-    if (!postcode || !budgetMax || !mealOptions || mealOptions.length === 0) {
-      return Response.json({ message: 'Missing required fields' }, { status: 400 });
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json(
+        { message: 'Request body must be valid JSON.' },
+        { status: 400 }
+      );
     }
+
+    // Validate and normalise input before any lookup or provider call.
+    // Only the normalised values are used from here on; extra keys are dropped.
+    const validation = validateRecommendationRequest(body);
+    if (!validation.ok) {
+      return Response.json({ message: validation.message }, { status: 400 });
+    }
+    const { postcode, budgetMin, budgetMax, mealOptions } = validation.value;
 
     // Check the postcode exists and get its coordinates (postcodes.io)
     // before doing any other work
