@@ -28,7 +28,16 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch recommendations');
+        let message = 'Failed to fetch recommendations';
+        try {
+          const errorBody = await response.json();
+          if (typeof errorBody?.message === 'string' && errorBody.message) {
+            message = errorBody.message;
+          }
+        } catch {
+          // Non-JSON error body: keep the generic message
+        }
+        throw new Error(message);
       }
 
       const data = await response.json();
