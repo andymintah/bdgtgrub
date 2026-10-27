@@ -1,5 +1,6 @@
 import { mockRecommendations } from '../../utils/MockData';
-import { validatePostcode } from '../../utils/postcode';
+import { lookupPostcode } from '../../utils/postcode';
+import { haversineMiles } from '../../utils/geo';
 
 export async function POST(request) {
   try {
@@ -10,8 +11,13 @@ export async function POST(request) {
       return Response.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check the postcode exists (postcodes.io) before doing any other work
-    const postcodeStatus = await validatePostcode(postcode);
+    // Check the postcode exists and get its coordinates (postcodes.io)
+    // before doing any other work
+    const {
+      status: postcodeStatus,
+      latitude: originLat,
+      longitude: originLon,
+    } = await lookupPostcode(postcode);
     if (postcodeStatus === 'invalid_format') {
       return Response.json(
         { message: 'Please enter a valid UK postcode (for example SW1A 1AA).' },
@@ -35,7 +41,7 @@ export async function POST(request) {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // In a real implementation, this would:
-    // 1. Get coordinates from postcode (it is already validated above via postcodes.io)
+    // 1. Get coordinates from postcode (done above via postcodes.io)
     // 2. Query food delivery APIs (Deliveroo, Just Eat, Uber Eats)
     // 3. Use LLM to process and rank results
     // 4. Filter by budget and meal preferences
@@ -50,7 +56,14 @@ export async function POST(request) {
         )
       );
       return matchesBudget && matchesMeal;
-    }).slice(0, 8); // Return max 8 recommendations
+    }).slice(0, 8) // Return max 8 recommendations
+      // Map to new objects so the shared mock data is never mutated
+      .map(item => ({
+        ...item,
+        distance: originLat === null || originLon === null
+          ? null
+          : Math.round(haversineMiles(originLat, originLon, item.latitude, item.longitude) * 10) / 10,
+      }));
 
     // Simulate LLM ranking based on relevance
     const rankedRecommendations = recommendations.sort((a, b) => {
