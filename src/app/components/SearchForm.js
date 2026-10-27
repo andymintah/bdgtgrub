@@ -20,11 +20,37 @@ export default function SearchForm({ onSearch, loading }) {
   const [budgetMax, setBudgetMax] = useState('');
   const [selectedMeals, setSelectedMeals] = useState([]);
   const [postcodeError, setPostcodeError] = useState('');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const validatePostcode = (postcode) => {
     const ukPostcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
     return ukPostcodeRegex.test(postcode.trim());
   };
+
+  // Budget and meal checks. Empty or non-numeric min is treated as 0;
+  // a negative min is also treated as 0 (clamped) rather than erroring.
+  const getFieldErrors = () => {
+    const errors = {};
+    const max = parseFloat(budgetMax);
+    const parsedMin = parseFloat(budgetMin);
+    const min = Number.isNaN(parsedMin) ? 0 : Math.max(0, parsedMin);
+
+    if (Number.isNaN(max) || max <= 0) {
+      errors.budgetMax = 'Please enter a valid max budget';
+    } else if (min > max) {
+      errors.budgetMin = 'Min budget cannot be greater than max budget';
+    }
+
+    if (selectedMeals.length === 0) {
+      errors.meals = 'Please select at least one meal option';
+    }
+
+    return errors;
+  };
+
+  // Errors are only shown after the first submit, and are re-derived from
+  // the current values so they clear as soon as each field is fixed.
+  const fieldErrors = submitAttempted ? getFieldErrors() : {};
 
   const handlePostcodeChange = (e) => {
     const value = e.target.value.toUpperCase();
@@ -47,25 +73,22 @@ export default function SearchForm({ onSearch, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (!validatePostcode(postcode)) {
+    setSubmitAttempted(true);
+
+    const postcodeValid = validatePostcode(postcode);
+    if (!postcodeValid) {
       setPostcodeError('Please enter a valid UK postcode');
+    }
+
+    const errors = getFieldErrors();
+    if (!postcodeValid || Object.keys(errors).length > 0) {
       return;
     }
 
-    if (!budgetMax || parseFloat(budgetMax) <= 0) {
-      alert('Please enter a valid budget');
-      return;
-    }
-
-    if (selectedMeals.length === 0) {
-      alert('Please select at least one meal option');
-      return;
-    }
-
+    const parsedMin = parseFloat(budgetMin);
     onSearch({
       postcode: postcode.trim(),
-      budgetMin: budgetMin ? parseFloat(budgetMin) : 0,
+      budgetMin: Number.isNaN(parsedMin) ? 0 : Math.max(0, parsedMin),
       budgetMax: parseFloat(budgetMax),
       mealOptions: selectedMeals
     });
@@ -73,7 +96,7 @@ export default function SearchForm({ onSearch, loading }) {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {/* Postcode Input */}
         <div>
           <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -109,8 +132,17 @@ export default function SearchForm({ onSearch, loading }) {
               placeholder="0"
               min="0"
               step="0.50"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              aria-invalid={fieldErrors.budgetMin ? 'true' : undefined}
+              aria-describedby={fieldErrors.budgetMin ? 'budget-min-error' : undefined}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                fieldErrors.budgetMin ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
+            {fieldErrors.budgetMin && (
+              <p id="budget-min-error" role="alert" className="text-red-500 text-sm mt-1">
+                {fieldErrors.budgetMin}
+              </p>
+            )}
           </div>
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -124,9 +156,18 @@ export default function SearchForm({ onSearch, loading }) {
               placeholder="20"
               min="0"
               step="0.50"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              aria-invalid={fieldErrors.budgetMax ? 'true' : undefined}
+              aria-describedby={fieldErrors.budgetMax ? 'budget-max-error' : undefined}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                fieldErrors.budgetMax ? 'border-red-500' : 'border-gray-300'
+              }`}
               required
             />
+            {fieldErrors.budgetMax && (
+              <p id="budget-max-error" role="alert" className="text-red-500 text-sm mt-1">
+                {fieldErrors.budgetMax}
+              </p>
+            )}
           </div>
         </div>
 
@@ -136,7 +177,12 @@ export default function SearchForm({ onSearch, loading }) {
             <Utensils className="w-4 h-4 mr-2" />
             Meal Options
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          <div
+            role="group"
+            aria-label="Meal options"
+            aria-describedby={fieldErrors.meals ? 'meals-error' : undefined}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2"
+          >
             {MEAL_OPTIONS.map((option) => (
               <button
                 key={option.value}
@@ -152,6 +198,11 @@ export default function SearchForm({ onSearch, loading }) {
               </button>
             ))}
           </div>
+          {fieldErrors.meals && (
+            <p id="meals-error" role="alert" className="text-red-500 text-sm mt-1">
+              {fieldErrors.meals}
+            </p>
+          )}
         </div>
 
         {/* Submit Button */}
