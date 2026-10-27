@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import { MapPin, PoundSterling, Utensils } from 'lucide-react';
-
-const MEAL_OPTIONS = [
-  { value: 'breakfast', label: 'Breakfast' },
-  { value: 'lunch', label: 'Lunch' },
-  { value: 'dinner', label: 'Dinner' },
-  { value: 'snacks', label: 'Snacks' },
-  { value: 'dessert', label: 'Dessert' },
-  { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'gluten-free', label: 'Gluten-Free' },
-  { value: 'halal', label: 'Halal' },
-  { value: 'kosher', label: 'Kosher' }
-];
+import { MEAL_OPTIONS } from '../utils/mealOptions';
 
 export default function SearchForm({ onSearch, loading }) {
   const [postcode, setPostcode] = useState('');
