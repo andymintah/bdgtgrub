@@ -27,7 +27,7 @@ The repo also holds a "software factory": an agent workflow that builds features
 - Agents take context from files only, and each one writes only its own file in `factory/jobs/<id>/`. Every review starts with `VERDICT: PASS` or `VERDICT: CHANGES`, and `decision.md` starts with `APPROVE` or `ESCALATE`. Only the orchestrator writes `job.json`.
 - Dashboard: `cd factory && python3 -m http.server`, then open `http://localhost:8000/dashboard.html`. It polls the `jobs/*/job.json` files.
 - The backlog's first items are the fixes listed under "Known structural issues" below.
-- Setup is incomplete: `.claude/skills/factory/` and `.claude/agents/` are not in this repo yet.
+- The orchestrator is `.claude/skills/factory/SKILL.md` and the seven agents are in `.claude/agents/`. Agents read this file for setup and commands. `agent-browser` is optional: without it, agents check the app with `curl` and by reading code.
 
 ## Architecture
 
