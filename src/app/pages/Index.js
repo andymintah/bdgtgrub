@@ -50,38 +50,28 @@ export default function Home() {
   };
 
   return (
-    <>
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-orange-50 to-red-50">
-        <div className="container mx-auto px-4 py-8">
-          <header className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              🍽️ Food Delivery Finder
-            </h1>
-            <p className="text-lg text-gray-600">
-              Discover delicious meals within your budget and location
-            </p>
-          </header>
+    <main className="min-h-screen max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <header className="mb-8">
+        <p className="type-expanded font-extrabold text-xl">BudgetGrub</p>
+        <h1 className="text-steam text-lg mt-1">Takeaway that fits your budget</h1>
+      </header>
 
-          <div className="max-w-4xl mx-auto">
-            <SearchForm onSearch={handleSearch} loading={loading} />
-            
-            {error && <ErrorMessage message={error} />}
-            
-            {loading && <LoadingSpinner />}
-            
-            {recommendations.length > 0 && !loading && (
-              <RecommendationList 
-                recommendations={recommendations} 
-                searchParams={searchParams}
-              />
-            )}
+      <SearchForm onSearch={handleSearch} loading={loading} />
 
-            {searchParams && !loading && !error && recommendations.length === 0 && (
-              <EmptyState searchParams={searchParams} />
-            )}
-          </div>
-        </div>
-      </div>
-    </>
+      {error && <ErrorMessage message={error} />}
+
+      {loading && <LoadingSpinner searchParams={searchParams} />}
+
+      {recommendations.length > 0 && !loading && (
+        <RecommendationList
+          recommendations={recommendations}
+          searchParams={searchParams}
+        />
+      )}
+
+      {searchParams && !loading && !error && recommendations.length === 0 && (
+        <EmptyState searchParams={searchParams} />
+      )}
+    </main>
   );
 }

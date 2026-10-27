@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { MapPin, PoundSterling, Utensils } from 'lucide-react';
 import { MEAL_OPTIONS } from '../utils/mealOptions';
+import { formatPrice } from '../utils/format';
 
 export default function SearchForm({ onSearch, loading }) {
   const [postcode, setPostcode] = useState('');
@@ -24,13 +24,13 @@ export default function SearchForm({ onSearch, loading }) {
     const min = Number.isNaN(parsedMin) ? 0 : Math.max(0, parsedMin);
 
     if (Number.isNaN(max) || max <= 0) {
-      errors.budgetMax = 'Please enter a valid max budget';
+      errors.budgetMax = 'Enter the most you want to spend, like 12';
     } else if (min > max) {
-      errors.budgetMin = 'Min budget cannot be greater than max budget';
+      errors.budgetMin = "The amount to ignore can't be more than your maximum";
     }
 
     if (selectedMeals.length === 0) {
-      errors.meals = 'Please select at least one meal option';
+      errors.meals = 'Pick at least one option';
     }
 
     return errors;
@@ -43,17 +43,17 @@ export default function SearchForm({ onSearch, loading }) {
   const handlePostcodeChange = (e) => {
     const value = e.target.value.toUpperCase();
     setPostcode(value);
-    
+
     if (value && !validatePostcode(value)) {
-      setPostcodeError('Please enter a valid UK postcode (e.g., SW1A 1AA)');
+      setPostcodeError('Enter a full UK postcode, like SW1A 1AA');
     } else {
       setPostcodeError('');
     }
   };
 
   const handleMealToggle = (mealValue) => {
-    setSelectedMeals(prev => 
-      prev.includes(mealValue) 
+    setSelectedMeals(prev =>
+      prev.includes(mealValue)
         ? prev.filter(m => m !== mealValue)
         : [...prev, mealValue]
     );
@@ -65,7 +65,7 @@ export default function SearchForm({ onSearch, loading }) {
 
     const postcodeValid = validatePostcode(postcode);
     if (!postcodeValid) {
-      setPostcodeError('Please enter a valid UK postcode');
+      setPostcodeError('Enter a full UK postcode, like SW1A 1AA');
     }
 
     const errors = getFieldErrors();
@@ -82,126 +82,134 @@ export default function SearchForm({ onSearch, loading }) {
     });
   };
 
+  const maxForLabel = parseFloat(budgetMax);
+  const submitLabel = loading
+    ? 'Finding meals…'
+    : maxForLabel > 0
+      ? `Find meals up to ${formatPrice(maxForLabel)}`
+      : 'Find meals';
+
+  const sentenceErrors = [
+    postcodeError && { id: 'postcode-error', text: postcodeError },
+    fieldErrors.budgetMax && { id: 'budget-max-error', text: fieldErrors.budgetMax },
+  ].filter(Boolean);
+
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-      <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        {/* Postcode Input */}
-        <div>
-          <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-            <MapPin className="w-4 h-4 mr-2" />
-            UK Postcode
-          </label>
+    <form onSubmit={handleSubmit} noValidate className="bg-plate rounded-2xl p-6 sm:p-10 mb-12">
+      <p className="type-expanded font-extrabold text-3xl sm:text-5xl leading-[1.35] sm:leading-[1.3]">
+        Food near{' '}
+        <label htmlFor="postcode" className="sr-only">UK postcode</label>
+        <input
+          id="postcode"
+          type="text"
+          value={postcode}
+          onChange={handlePostcodeChange}
+          placeholder="SW1A 1AA"
+          autoComplete="postal-code"
+          autoCapitalize="characters"
+          spellCheck={false}
+          size={8}
+          aria-invalid={postcodeError ? 'true' : undefined}
+          aria-describedby={postcodeError ? 'postcode-error' : undefined}
+          className="sentence-input w-[8.4ch] uppercase"
+          required
+        />{' '}
+        for up to{' '}
+        <span className="whitespace-nowrap">
+          £
+          <label htmlFor="budget-max" className="sr-only">Most you want to spend, in pounds</label>
           <input
-            type="text"
-            value={postcode}
-            onChange={handlePostcodeChange}
-            placeholder="e.g., SW1A 1AA"
-            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-              postcodeError ? 'border-red-500' : 'border-gray-300'
-            }`}
+            id="budget-max"
+            type="number"
+            inputMode="decimal"
+            value={budgetMax}
+            onChange={(e) => setBudgetMax(e.target.value)}
+            placeholder="12"
+            min="0"
+            step="0.50"
+            aria-invalid={fieldErrors.budgetMax ? 'true' : undefined}
+            aria-describedby={fieldErrors.budgetMax ? 'budget-max-error' : undefined}
+            className="sentence-input w-[3.4ch]"
             required
           />
-          {postcodeError && (
-            <p className="text-red-500 text-sm mt-1">{postcodeError}</p>
-          )}
-        </div>
+        </span>
+      </p>
 
-        {/* Budget Input */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-              <PoundSterling className="w-4 h-4 mr-2" />
-              Min Budget (optional)
-            </label>
-            <input
-              type="number"
-              value={budgetMin}
-              onChange={(e) => setBudgetMin(e.target.value)}
-              placeholder="0"
-              min="0"
-              step="0.50"
-              aria-invalid={fieldErrors.budgetMin ? 'true' : undefined}
-              aria-describedby={fieldErrors.budgetMin ? 'budget-min-error' : undefined}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                fieldErrors.budgetMin ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {fieldErrors.budgetMin && (
-              <p id="budget-min-error" role="alert" className="text-red-500 text-sm mt-1">
-                {fieldErrors.budgetMin}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-              <PoundSterling className="w-4 h-4 mr-2" />
-              Max Budget
-            </label>
-            <input
-              type="number"
-              value={budgetMax}
-              onChange={(e) => setBudgetMax(e.target.value)}
-              placeholder="20"
-              min="0"
-              step="0.50"
-              aria-invalid={fieldErrors.budgetMax ? 'true' : undefined}
-              aria-describedby={fieldErrors.budgetMax ? 'budget-max-error' : undefined}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                fieldErrors.budgetMax ? 'border-red-500' : 'border-gray-300'
-              }`}
-              required
-            />
-            {fieldErrors.budgetMax && (
-              <p id="budget-max-error" role="alert" className="text-red-500 text-sm mt-1">
-                {fieldErrors.budgetMax}
-              </p>
-            )}
-          </div>
+      {sentenceErrors.length > 0 && (
+        <div className="mt-3 space-y-1">
+          {sentenceErrors.map(({ id, text }) => (
+            <p key={id} id={id} role="alert" className="text-reduced font-medium">
+              {text}
+            </p>
+          ))}
         </div>
+      )}
 
-        {/* Meal Options */}
-        <div>
-          <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
-            <Utensils className="w-4 h-4 mr-2" />
-            Meal Options
-          </label>
-          <div
-            role="group"
-            aria-label="Meal options"
-            aria-describedby={fieldErrors.meals ? 'meals-error' : undefined}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2"
-          >
-            {MEAL_OPTIONS.map((option) => (
+      <div className="mt-5 text-lg text-steam">
+        <label htmlFor="budget-min">Ignore anything under </label>
+        <span className="whitespace-nowrap">
+          £
+          <input
+            id="budget-min"
+            type="number"
+            inputMode="decimal"
+            value={budgetMin}
+            onChange={(e) => setBudgetMin(e.target.value)}
+            placeholder="0"
+            min="0"
+            step="0.50"
+            aria-invalid={fieldErrors.budgetMin ? 'true' : undefined}
+            aria-describedby={fieldErrors.budgetMin ? 'budget-min-error' : undefined}
+            className="sentence-input w-[4ch] text-ink font-semibold border-b-2"
+          />
+          <span> (optional)</span>
+        </span>
+        {fieldErrors.budgetMin && (
+          <p id="budget-min-error" role="alert" className="text-reduced font-medium mt-1">
+            {fieldErrors.budgetMin}
+          </p>
+        )}
+      </div>
+
+      <fieldset
+        className="mt-8"
+        aria-describedby={fieldErrors.meals ? 'meals-error' : undefined}
+      >
+        <legend className="text-lg font-semibold mb-3">What are you after?</legend>
+        <div className="flex flex-wrap gap-2">
+          {MEAL_OPTIONS.map((option) => {
+            const selected = selectedMeals.includes(option.value);
+            return (
               <button
                 key={option.value}
                 type="button"
+                aria-pressed={selected}
                 onClick={() => handleMealToggle(option.value)}
-                className={`p-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedMeals.includes(option.value)
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-4 py-2 rounded-full border-2 font-medium transition-colors ${
+                  selected
+                    ? 'bg-sticker border-ink text-ink'
+                    : 'bg-plate border-ink/20 text-ink hover:border-ink/60'
                 }`}
               >
                 {option.label}
               </button>
-            ))}
-          </div>
-          {fieldErrors.meals && (
-            <p id="meals-error" role="alert" className="text-red-500 text-sm mt-1">
-              {fieldErrors.meals}
-            </p>
-          )}
+            );
+          })}
         </div>
+        {fieldErrors.meals && (
+          <p id="meals-error" role="alert" className="text-reduced font-medium mt-2">
+            {fieldErrors.meals}
+          </p>
+        )}
+      </fieldset>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading || !!postcodeError}
-          className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? 'Finding Recommendations...' : 'Find Food Options'}
-        </button>
-      </form>
-    </div>
+      <button
+        type="submit"
+        disabled={loading || !!postcodeError}
+        className="mt-10 w-full sm:w-auto bg-ink text-plate py-4 px-8 rounded-xl type-expanded font-bold text-lg hover:bg-ink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {submitLabel}
+      </button>
+    </form>
   );
 }
