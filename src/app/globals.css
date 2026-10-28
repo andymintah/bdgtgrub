@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-formica: #e6eeea;
-  --color-ink: #1c2838;
-  --color-sticker: #ffd62e;
-  --color-reduced: #c8102e;
-  --color-plate: #ffffff;
-  --color-steam: #5e6b78;
-  --font-sans: var(--font-archivo), Arial, Helvetica, sans-serif;
+  --color-ketchup: #e0261d;
+  --color-ketchup-dark: #b81d15;
+  --color-mustard: #ffc93c;
+  --color-pink: #ff6fae;
+  --color-lime: #b5f24a;
+  --color-soy: #2a1a12;
+  --color-box: #ffffff;
+  --font-sans: var(--font-gabarito), Arial, Helvetica, sans-serif;
+  --font-display: var(--font-shrikhand), Georgia, serif;
 }
 
 :root {
@@ -15,34 +17,39 @@
 }
 
 body {
-  background: var(--color-formica);
-  color: var(--color-ink);
+  background: var(--color-mustard);
+  color: var(--color-soy);
   font-family: var(--font-sans);
 }
 
-/* Archivo's width axis does the display work: one family, two widths. */
-.type-expanded {
-  font-stretch: 125%;
-  font-variant-numeric: tabular-nums;
+:focus-visible {
+  outline: 3px solid var(--color-soy);
+  outline-offset: 3px;
+}
+
+/* On the ketchup shopfront a soy outline disappears, so focus goes white */
+.shopfront :focus-visible {
+  outline-color: #fff;
 }
 
 /* Inline inputs inside the search sentence */
 .sentence-input {
-  background: transparent;
-  border: 0;
-  border-bottom: 3px solid var(--color-ink);
-  border-radius: 0;
-  color: var(--color-ink);
+  background: #fff;
+  border: 3px solid var(--color-soy);
+  border-radius: 14px;
+  color: var(--color-soy);
   font: inherit;
-  padding: 0 0.1em;
+  padding: 0 0.2em;
+  margin: 0.08em 0;
+  rotate: -1.5deg;
 }
 
 .sentence-input::placeholder {
-  color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  color: color-mix(in srgb, var(--color-soy) 30%, transparent);
 }
 
 .sentence-input[aria-invalid="true"] {
-  border-bottom-color: var(--color-reduced);
+  background: #ffe3e1;
 }
 
 .sentence-input::-webkit-outer-spin-button,
@@ -55,34 +62,54 @@ body {
   -moz-appearance: textfield;
 }
 
-:focus-visible {
-  outline: 3px solid var(--color-ink);
-  outline-offset: 3px;
+/* Chunky submit button with a soy lip that it presses down onto */
+.press-button {
+  box-shadow: 0 6px 0 var(--color-soy);
+  transition: translate 80ms ease-out, box-shadow 80ms ease-out;
 }
 
-/* The reduced sticker: the one loud thing on the page */
-.sticker {
-  background: var(--color-sticker);
-  border-radius: 4px;
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-ink) 25%, transparent);
-  rotate: -4deg;
+.press-button:active:not(:disabled) {
+  translate: 0 4px;
+  box-shadow: 0 2px 0 var(--color-soy);
+}
+
+/* Shop-window price star */
+.price-star {
+  rotate: var(--tilt, 8deg);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .sticker {
-    animation: sticker-land 380ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  .price-star {
+    animation: star-pop 420ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  }
+
+  .chip-wobble[aria-pressed="true"] {
+    animation: wobble 260ms ease-out;
+  }
+
+  .box-bounce {
+    animation: bounce 700ms ease-in-out infinite;
   }
 }
 
-@keyframes sticker-land {
+@keyframes star-pop {
   from {
-    opacity: 0;
-    scale: 1.25;
-    rotate: -14deg;
+    scale: 0;
+    rotate: -40deg;
   }
   to {
-    opacity: 1;
     scale: 1;
-    rotate: -4deg;
+    rotate: var(--tilt, 8deg);
   }
+}
+
+@keyframes wobble {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -6deg; }
+  65% { rotate: 4deg; }
+}
+
+@keyframes bounce {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
 }

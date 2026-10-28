@@ -6,6 +6,8 @@ import RecommendationList from '../components/RecommendationList';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import EmptyState from '../components/EmptyState';
+import Logo from '../components/Logo';
+import Drip from '../components/Drip';
 
 export default function Home() {
   const [recommendations, setRecommendations] = useState([]);
@@ -50,28 +52,35 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      <header className="mb-8">
-        <p className="type-expanded font-extrabold text-xl">BudgetGrub</p>
-        <h1 className="text-steam text-lg mt-1">Takeaway that fits your budget</h1>
-      </header>
+    <main className="min-h-screen overflow-x-clip">
+      <div className="shopfront bg-ketchup text-box">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-10">
+          <header className="mb-10 sm:mb-14">
+            <Logo />
+            <h1 className="mt-3 text-lg font-semibold">Takeaway for when you&apos;re a bit skint</h1>
+          </header>
 
-      <SearchForm onSearch={handleSearch} loading={loading} />
+          <SearchForm onSearch={handleSearch} loading={loading} />
+        </div>
+      </div>
+      <Drip />
 
-      {error && <ErrorMessage message={error} />}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-20">
+        {error && <ErrorMessage message={error} />}
 
-      {loading && <LoadingSpinner searchParams={searchParams} />}
+        {loading && <LoadingSpinner searchParams={searchParams} />}
 
-      {recommendations.length > 0 && !loading && (
-        <RecommendationList
-          recommendations={recommendations}
-          searchParams={searchParams}
-        />
-      )}
+        {recommendations.length > 0 && !loading && (
+          <RecommendationList
+            recommendations={recommendations}
+            searchParams={searchParams}
+          />
+        )}
 
-      {searchParams && !loading && !error && recommendations.length === 0 && (
-        <EmptyState searchParams={searchParams} />
-      )}
+        {searchParams && !loading && !error && recommendations.length === 0 && (
+          <EmptyState searchParams={searchParams} />
+        )}
+      </div>
     </main>
   );
 }
