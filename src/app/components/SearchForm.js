@@ -95,8 +95,8 @@ export default function SearchForm({ onSearch, loading }) {
   ].filter(Boolean);
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="bg-plate rounded-2xl p-6 sm:p-10 mb-12">
-      <p className="type-expanded font-extrabold text-3xl sm:text-5xl leading-[1.35] sm:leading-[1.3]">
+    <form onSubmit={handleSubmit} noValidate>
+      <p className="font-display text-[2.1rem] sm:text-6xl leading-[1.4] sm:leading-[1.3]">
         Food near{' '}
         <label htmlFor="postcode" className="sr-only">UK postcode</label>
         <input
@@ -111,7 +111,7 @@ export default function SearchForm({ onSearch, loading }) {
           size={8}
           aria-invalid={postcodeError ? 'true' : undefined}
           aria-describedby={postcodeError ? 'postcode-error' : undefined}
-          className="sentence-input w-[8.4ch] uppercase"
+          className="sentence-input w-[8.8ch] uppercase"
           required
         />{' '}
         for up to{' '}
@@ -129,23 +129,23 @@ export default function SearchForm({ onSearch, loading }) {
             step="0.50"
             aria-invalid={fieldErrors.budgetMax ? 'true' : undefined}
             aria-describedby={fieldErrors.budgetMax ? 'budget-max-error' : undefined}
-            className="sentence-input w-[3.4ch]"
+            className="sentence-input w-[2.6ch]"
             required
           />
         </span>
       </p>
 
       {sentenceErrors.length > 0 && (
-        <div className="mt-3 space-y-1">
+        <div className="mt-4 flex flex-col items-start gap-2">
           {sentenceErrors.map(({ id, text }) => (
-            <p key={id} id={id} role="alert" className="text-reduced font-medium">
+            <p key={id} id={id} role="alert" className="bg-soy text-box font-semibold rounded-xl px-3 py-1.5">
               {text}
             </p>
           ))}
         </div>
       )}
 
-      <div className="mt-5 text-lg text-steam">
+      <div className="mt-5 text-lg">
         <label htmlFor="budget-min">Ignore anything under </label>
         <span className="whitespace-nowrap">
           £
@@ -160,12 +160,12 @@ export default function SearchForm({ onSearch, loading }) {
             step="0.50"
             aria-invalid={fieldErrors.budgetMin ? 'true' : undefined}
             aria-describedby={fieldErrors.budgetMin ? 'budget-min-error' : undefined}
-            className="sentence-input w-[4ch] text-ink font-semibold border-b-2"
+            className="sentence-input w-[4ch] font-bold text-base"
           />
           <span> (optional)</span>
         </span>
         {fieldErrors.budgetMin && (
-          <p id="budget-min-error" role="alert" className="text-reduced font-medium mt-1">
+          <p id="budget-min-error" role="alert" className="mt-2 inline-block bg-soy text-box font-semibold rounded-xl px-3 py-1.5">
             {fieldErrors.budgetMin}
           </p>
         )}
@@ -175,7 +175,7 @@ export default function SearchForm({ onSearch, loading }) {
         className="mt-8"
         aria-describedby={fieldErrors.meals ? 'meals-error' : undefined}
       >
-        <legend className="text-lg font-semibold mb-3">What are you after?</legend>
+        <legend className="font-display text-2xl mb-3">What are you after?</legend>
         <div className="flex flex-wrap gap-2">
           {MEAL_OPTIONS.map((option) => {
             const selected = selectedMeals.includes(option.value);
@@ -185,10 +185,10 @@ export default function SearchForm({ onSearch, loading }) {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => handleMealToggle(option.value)}
-                className={`px-4 py-2 rounded-full border-2 font-medium transition-colors ${
+                className={`chip-wobble px-4 py-2 rounded-full font-bold transition-colors ${
                   selected
-                    ? 'bg-sticker border-ink text-ink'
-                    : 'bg-plate border-ink/20 text-ink hover:border-ink/60'
+                    ? 'bg-mustard text-soy'
+                    : 'bg-soy/25 text-box hover:bg-soy/40'
                 }`}
               >
                 {option.label}
@@ -197,7 +197,7 @@ export default function SearchForm({ onSearch, loading }) {
           })}
         </div>
         {fieldErrors.meals && (
-          <p id="meals-error" role="alert" className="text-reduced font-medium mt-2">
+          <p id="meals-error" role="alert" className="mt-3 inline-block bg-soy text-box font-semibold rounded-xl px-3 py-1.5">
             {fieldErrors.meals}
           </p>
         )}
@@ -206,7 +206,7 @@ export default function SearchForm({ onSearch, loading }) {
       <button
         type="submit"
         disabled={loading || !!postcodeError}
-        className="mt-10 w-full sm:w-auto bg-ink text-plate py-4 px-8 rounded-xl type-expanded font-bold text-lg hover:bg-ink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="press-button mt-10 w-full sm:w-auto bg-mustard text-soy py-4 px-9 rounded-2xl font-display text-2xl disabled:cursor-not-allowed disabled:translate-y-1 disabled:shadow-[0_2px_0_var(--color-soy)]"
       >
         {submitLabel}
       </button>
